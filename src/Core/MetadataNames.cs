@@ -49,6 +49,7 @@ namespace Roslynator
         public static readonly MetadataName System_Runtime_InteropServices_LayoutKind = MetadataName.Parse("System.Runtime.InteropServices.LayoutKind");
         public static readonly MetadataName System_Runtime_InteropServices_StructLayoutAttribute = MetadataName.Parse("System.Runtime.InteropServices.StructLayoutAttribute");
         public static readonly MetadataName System_Runtime_Serialization_DataMemberAttribute = MetadataName.Parse("System.Runtime.Serialization.DataMemberAttribute");
+        public static readonly MetadataName System_Runtime_Serialization_DataContractAttribute = MetadataName.Parse("System.Runtime.Serialization.DataContractAttribute");
         public static readonly MetadataName System_Runtime_Serialization_SerializationInfo = MetadataName.Parse("System.Runtime.Serialization.SerializationInfo");
         public static readonly MetadataName System_Runtime_Serialization_StreamingContext = MetadataName.Parse("System.Runtime.Serialization.StreamingContext");
         public static readonly MetadataName System_StringComparison = MetadataName.Parse("System.StringComparison");

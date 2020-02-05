@@ -2643,5 +2643,17 @@ namespace Roslynator.CSharp
             helpLinkUri:        DiagnosticIdentifiers.ImplementNonGenericCounterpart, 
             customTags:         Array.Empty<string>());
 
+        /// <summary>PJL0001</summary>
+        public static readonly DiagnosticDescriptor MakeDataContractNamesAndOrderExplicit = Factory.Create(
+            id:                 DiagnosticIdentifiers.MakeDataContractNamesAndOrderExplicit, 
+            title:              "Make name of DataContract and name of and order of associated DataMember explicit.", 
+            messageFormat:      "Make name of DataContract and name of and order of associated DataMember explicit.", 
+            category:           DiagnosticCategories.Maintainability, 
+            defaultSeverity:    DiagnosticSeverity.Warning, 
+            isEnabledByDefault: true, 
+            description:        null, 
+            helpLinkUri:        DiagnosticIdentifiers.MakeDataContractNamesAndOrderExplicit, 
+            customTags:         Array.Empty<string>());
+
     }
 }

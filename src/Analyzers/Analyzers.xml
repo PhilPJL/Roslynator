@@ -5611,4 +5611,43 @@ public abstract class EqualityComparer : IEqualityComparer<C>, IEqualityComparer
       </Sample>
     </Samples>
   </Analyzer>
+  <Analyzer Identifier="MakeDataContractNamesAndOrderExplicit" IsDevelopment="true">
+    <Id>PJL0001</Id>
+    <Title>Make name of DataContract and name of and order of associated DataMember explicit</Title>
+    <MessageFormat></MessageFormat>
+    <Category>Maintainability</Category>
+    <DefaultSeverity>Warning</DefaultSeverity>
+    <IsEnabledByDefault>true</IsEnabledByDefault>
+    <SupportsFadeOut>false</SupportsFadeOut>
+    <SupportsFadeOutAnalyzer>false</SupportsFadeOutAnalyzer>
+    <MinLanguageVersion></MinLanguageVersion>
+    <Samples>
+      <Sample>
+        <Before>
+          <![CDATA[[DataContract]
+class Foo 
+{
+    [DataMember] int P1 {get;set;}
+    [DataMember(Order = 10)] string P2 {get;set;}
+    public string P3 {get;set;}
+}]]>
+        </Before>
+        <After>
+          <![CDATA[[DataContract(Name = "Foo")]
+class Foo
+{
+    [DataMember(Name = "P1", Order = 1] int P1 {get;set;}
+    [DataMember(Name = "P2", Order = 2] string P2 {get;set;}
+    public string P3 {get;set;}
+}]]>
+        </After>      </Sample>
+    </Samples>
+    <Remarks></Remarks>
+    <Links>
+      <Link>
+        <Url></Url>
+        <Text></Text>
+      </Link>
+    </Links>
+  </Analyzer>
 </Analyzers>
