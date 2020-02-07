@@ -1,0 +1,7 @@
+﻿[*.cs]
+
+# RCS1112: Combine 'Enumerable.Where' method chain.
+dotnet_diagnostic.RCS1112.severity = none
+
+# RCS1050: Add argument list to object creation expression.
+dotnet_diagnostic.RCS1050.severity = none
