@@ -59,15 +59,18 @@ namespace Roslynator.CSharp.CSharp.CodeFixes
             var replacementNodes = new List<(SyntaxNode oldNode, SyntaxNode newNode)>();
 
             // Add name argument to DataContract if missing and sort argument list
-            if (dataContractAttribute.NamedArguments.All(kvp => kvp.Key != Name))
+            var dataContractAttributeSyntax = (AttributeSyntax)dataContractAttribute.ApplicationSyntaxReference.GetSyntax(cancellationToken);
+            var dcArgList = dataContractAttributeSyntax.ArgumentList;
+
+            var dcNameArgument = dcArgList?.Arguments.SingleOrDefault(a => a.NameEquals?.Name.Identifier.ValueText == Name);
+            var dcNameExpression = dcNameArgument?.Expression as LiteralExpressionSyntax;
+
+            if (dcArgList == null || (dcNameArgument != null && string.IsNullOrWhiteSpace(dcNameExpression?.Token.ValueText)))
             {
-                var dataContractAttributeSyntax = (AttributeSyntax)dataContractAttribute.ApplicationSyntaxReference.GetSyntax(cancellationToken);
-                var nameArgument = AttributeArgument(NameEquals(IdentifierName(Name)), StringLiteralExpression(typeDeclaration.Identifier.ValueText));
+                var newNameArgument = AttributeArgument(NameEquals(IdentifierName(Name)), StringLiteralExpression(typeDeclaration.Identifier.ValueText));
 
-                var argList = dataContractAttributeSyntax.ArgumentList;
-
-                var arguments = (argList == null) ? new[] { nameArgument } :
-                        (IEnumerable<AttributeArgumentSyntax>)argList.Arguments.Add(nameArgument).OrderBy(a => a.NameEquals.Name.Identifier.ValueText);
+                var arguments = (dcArgList == null) ? new[] { newNameArgument } :
+                        (IEnumerable<AttributeArgumentSyntax>)(dcArgList.Arguments.Where(a => a != dcNameArgument)).Concat(new[] { newNameArgument }).OrderBy(a => a.NameEquals.Name.Identifier.ValueText);
 
                 var newDataContractAttribute = Attribute(IdentifierName(dataContractAttributeSyntax.Name.ToString()), AttributeArgumentList(arguments.ToArray()));
 
@@ -81,17 +84,17 @@ namespace Roslynator.CSharp.CSharp.CodeFixes
                 .Select(m =>
                 {
                     var dataMemberAttributeSyntax = (AttributeSyntax)(m.GetAttribute(MetadataNames.System_Runtime_Serialization_DataMemberAttribute).ApplicationSyntaxReference.GetSyntax(cancellationToken));
-                    var argList = dataMemberAttributeSyntax.ArgumentList;
+                    var dmArgList = dataMemberAttributeSyntax.ArgumentList;
+
+                    var dmNameExpression = dmArgList?.Arguments.SingleOrDefault(a => a.NameEquals?.Name.Identifier.ValueText == Name)?.Expression as LiteralExpressionSyntax;
+                    var dmOrderExpression = dmArgList?.Arguments.SingleOrDefault(a => a.NameEquals?.Name.Identifier.ValueText == Order)?.Expression as LiteralExpressionSyntax;
 
                     return new
                     {
                         dataMemberAttributeSyntax,
 
-                        Name = (((LiteralExpressionSyntax)argList?.Arguments
-                            .SingleOrDefault(a => a.NameEquals.Name.Identifier.ValueText == Name)?.Expression)?.Token.ValueText) ?? m.Name,
-
-                        Order = (int?)((LiteralExpressionSyntax)argList?.Arguments
-                            .SingleOrDefault(a => a.NameEquals.Name.Identifier.ValueText == Order)?.Expression)?.Token.Value
+                        Name = (string.IsNullOrWhiteSpace(dmNameExpression?.Token.ValueText)) ? m.Name : dmNameExpression?.Token.ValueText,
+                        Order = (int?)dmOrderExpression?.Token.Value
                     };
                 })
                 // Members without an explit Order come first
@@ -113,21 +116,19 @@ namespace Roslynator.CSharp.CSharp.CodeFixes
             {
                 var dataMemberAttributeSyntax = m.DataMemberAttributeSyntax;
 
-                var nameArgument = AttributeArgument(NameEquals(IdentifierName(Name)), StringLiteralExpression(m.Name));
-                var orderArgument = AttributeArgument(NameEquals(IdentifierName(Order)), NumericLiteralExpression(m.Order));
+                var newNameArgument = AttributeArgument(NameEquals(IdentifierName(Name)), StringLiteralExpression(m.Name));
+                var newOrderArgument = AttributeArgument(NameEquals(IdentifierName(Order)), NumericLiteralExpression(m.Order));
 
-                IEnumerable<AttributeArgumentSyntax> newArgs = new List<AttributeArgumentSyntax> { nameArgument, orderArgument };
+                IEnumerable<AttributeArgumentSyntax> newArgs = new List<AttributeArgumentSyntax> { newNameArgument, newOrderArgument };
 
                 if (dataMemberAttributeSyntax.ArgumentList != null)
                 {
                     newArgs = newArgs
                         .Concat(dataMemberAttributeSyntax.ArgumentList.Arguments
-                        .Where(a => a.NameEquals.Name.Identifier.ValueText != Name)
-                        .Where(a => a.NameEquals.Name.Identifier.ValueText != Order));
+                        .Where(a => (a.NameEquals?.Name.Identifier.ValueText != Name) && (a.NameEquals?.Name.Identifier.ValueText != Order)));
                 }
 
-                var arguments = newArgs
-                    .OrderBy(a => a.NameEquals.Name.Identifier.ValueText);
+                var arguments = newArgs.OrderBy(a => a.NameEquals.Name.Identifier.ValueText);
 
                 var newDataMemberAttribute = Attribute(IdentifierName(dataMemberAttributeSyntax.Name.ToString()), AttributeArgumentList(arguments.ToArray()));
 
@@ -136,10 +137,7 @@ namespace Roslynator.CSharp.CSharp.CodeFixes
 
             return await document.ReplaceNodesAsync(replacementNodes.Select(r => r.oldNode), GetReplacement, cancellationToken).ConfigureAwait(false);
 
-            SyntaxNode GetReplacement(SyntaxNode n1, SyntaxNode _)
-            {
-                return replacementNodes.Single(r => r.oldNode == n1).newNode;
-            }
+            SyntaxNode GetReplacement(SyntaxNode n1, SyntaxNode _) => replacementNodes.Single(r => r.oldNode == n1).newNode;
         }
     }
 }

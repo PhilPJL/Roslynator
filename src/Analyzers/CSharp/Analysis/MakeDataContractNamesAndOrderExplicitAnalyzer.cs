@@ -44,7 +44,7 @@ namespace Roslynator.CSharp.CSharp.Analysis
             const string Name = "Name";
             const string Order = "Order";
 
-            if (!dataContractAttribute.NamedArguments.Any(kvp => kvp.Key == Name))
+            if (!dataContractAttribute.NamedArguments.Any(kvp => kvp.Key == Name) || dataContractAttribute.NamedArguments.Any(kvp => kvp.Key == Name && string.IsNullOrWhiteSpace(kvp.Value.Value?.ToString())))
             {
                 DiagnosticHelpers.ReportDiagnostic(context, DiagnosticDescriptors.MakeDataContractNamesAndOrderExplicit, typeDeclaration.Identifier);
             }
@@ -55,14 +55,38 @@ namespace Roslynator.CSharp.CSharp.Analysis
                     .Where(m => m.DataMemberAttribute != null)
                     .ToList();
 
+                // No name arg
                 if (members.Any(m => !m.DataMemberAttribute.NamedArguments.Any(kvp => kvp.Key == Name)))
                 {
                     DiagnosticHelpers.ReportDiagnostic(context, DiagnosticDescriptors.MakeDataContractNamesAndOrderExplicit, typeDeclaration.Identifier);
                 }
+                // No order
                 else if (members.Any(m => !m.DataMemberAttribute.NamedArguments.Any(kvp => kvp.Key == Order)))
                 {
                     DiagnosticHelpers.ReportDiagnostic(context, DiagnosticDescriptors.MakeDataContractNamesAndOrderExplicit, typeDeclaration.Identifier);
                 }
+                // Name arg present, but value missing or empty
+                else if (members.Any(m => m.DataMemberAttribute.NamedArguments.Any(kvp => kvp.Key == Name && string.IsNullOrWhiteSpace(kvp.Value.Value?.ToString()))))
+                {
+                    DiagnosticHelpers.ReportDiagnostic(context, DiagnosticDescriptors.MakeDataContractNamesAndOrderExplicit, typeDeclaration.Identifier);
+                }
+                // Order arg present, but value missing
+                else if (members.Any(m => m.DataMemberAttribute.NamedArguments.Any(kvp => kvp.Key == Order && ((int?)kvp.Value.Value) == null)))
+                {
+                    DiagnosticHelpers.ReportDiagnostic(context, DiagnosticDescriptors.MakeDataContractNamesAndOrderExplicit, typeDeclaration.Identifier);
+                }
+                // Duplicate order
+                else if(members
+                    .Select(m => (int?)m.DataMemberAttribute.NamedArguments.SingleOrDefault(kvp => kvp.Key == Order).Value.Value)
+                    .Where(o => o.HasValue)
+                    .Select(o => o.Value)
+                    .GroupBy(o => o)
+                    .Any(g => g.Count() > 1))
+                {
+                    DiagnosticHelpers.ReportDiagnostic(context, DiagnosticDescriptors.MakeDataContractNamesAndOrderExplicit, typeDeclaration.Identifier);
+                }
+
+                // Duplicate name is an error and should be a separate analyzer
             }
         }
     }
