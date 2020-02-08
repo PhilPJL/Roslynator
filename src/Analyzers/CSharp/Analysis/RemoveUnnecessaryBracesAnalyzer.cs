@@ -72,7 +72,7 @@ namespace Roslynator.CSharp.Analysis
             if (!AnalyzeTrivia(openBrace.TrailingTrivia))
                 return;
 
-            if (!AnalyzeTrivia(statements.First().GetLeadingTrivia()))
+            if (!AnalyzeTrivia(statements[0].GetLeadingTrivia()))
                 return;
 
             if (!AnalyzeTrivia(statements.Last().GetTrailingTrivia()))
@@ -89,7 +89,7 @@ namespace Roslynator.CSharp.Analysis
             DiagnosticHelpers.ReportDiagnostic(context, DiagnosticDescriptors.RemoveUnnecessaryBraces, openBrace);
             DiagnosticHelpers.ReportDiagnostic(context, DiagnosticDescriptors.RemoveUnnecessaryBracesFadeOut, closeBrace);
 
-            bool AnalyzeTrivia(SyntaxTriviaList trivia)
+            static bool AnalyzeTrivia(SyntaxTriviaList trivia)
             {
                 return trivia.All(f => f.IsKind(SyntaxKind.WhitespaceTrivia, SyntaxKind.EndOfLineTrivia, SyntaxKind.SingleLineCommentTrivia));
             }

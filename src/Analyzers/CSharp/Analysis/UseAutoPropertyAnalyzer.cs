@@ -43,7 +43,7 @@ namespace Roslynator.CSharp.Analysis
             });
         }
 
-        public static void AnalyzePropertyDeclaration(SyntaxNodeAnalysisContext context)
+        private static void AnalyzePropertyDeclaration(SyntaxNodeAnalysisContext context)
         {
             var property = (PropertyDeclarationSyntax)context.Node;
 
@@ -340,7 +340,7 @@ namespace Roslynator.CSharp.Analysis
 
             return null;
 
-            IdentifierNameSyntax GetIdentifierName(ExpressionSyntax expression)
+            static IdentifierNameSyntax GetIdentifierName(ExpressionSyntax expression)
             {
                 if (expression?.Kind() == SyntaxKind.SimpleAssignmentExpression)
                 {
