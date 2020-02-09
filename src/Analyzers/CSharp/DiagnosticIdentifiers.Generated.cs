@@ -224,6 +224,6 @@ namespace Roslynator.CSharp
         public const string UnnecessaryOperator = "RCS1240";
         public const string ImplementNonGenericCounterpart = "RCS1241";
 
-        public const string MakeDataContractNamesAndOrderExplicit = "PJL0001";
+        public const string MakeDataContractNamesAndOrderExplicit = "RCS1242";
     }
 }

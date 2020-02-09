@@ -44,7 +44,7 @@ namespace Roslynator.CSharp.CSharp.Analysis
             const string Name = "Name";
             const string Order = "Order";
 
-            if (!dataContractAttribute.NamedArguments.Any(kvp => kvp.Key == Name) || dataContractAttribute.NamedArguments.Any(kvp => kvp.Key == Name && string.IsNullOrWhiteSpace(kvp.Value.Value?.ToString())))
+            if (dataContractAttribute.NamedArguments.All(kvp => kvp.Key != Name) || dataContractAttribute.NamedArguments.Any(kvp => kvp.Key == Name && string.IsNullOrWhiteSpace(kvp.Value.Value?.ToString())))
             {
                 DiagnosticHelpers.ReportDiagnostic(context, DiagnosticDescriptors.MakeDataContractNamesAndOrderExplicit, typeDeclaration.Identifier);
             }

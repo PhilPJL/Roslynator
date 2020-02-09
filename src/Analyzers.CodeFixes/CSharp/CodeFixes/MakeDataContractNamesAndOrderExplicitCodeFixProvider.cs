@@ -65,7 +65,7 @@ namespace Roslynator.CSharp.CSharp.CodeFixes
             var dcNameArgument = dcArgList?.Arguments.SingleOrDefault(a => a.NameEquals?.Name.Identifier.ValueText == Name);
             var dcNameExpression = dcNameArgument?.Expression as LiteralExpressionSyntax;
 
-            if (dcArgList == null || (dcNameArgument != null && string.IsNullOrWhiteSpace(dcNameExpression?.Token.ValueText)))
+            if (dcArgList == null || dcNameArgument == null || string.IsNullOrWhiteSpace(dcNameExpression?.Token.ValueText))
             {
                 var newNameArgument = AttributeArgument(NameEquals(IdentifierName(Name)), StringLiteralExpression(typeDeclaration.Identifier.ValueText));
 
