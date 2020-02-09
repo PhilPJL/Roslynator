@@ -392,5 +392,44 @@ namespace Roslynator.CSharp.Analysis.Tests
             await VerifyDiagnosticAndFixAsync(source, expected);
         }
 
+        [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.MakeDataContractNamesAndOrderExplicit)]
+        public async Task Test_StructAndField()
+        {
+            const string source =
+                @"
+                using System.Runtime.Serialization;
+                [DataContract(Namespace = ""n1"")]
+                struct [|C1|]
+                {
+                    [DataMember(Name = ""C"", Order = 1)]
+                    private int A;
+
+                    [DataMember(Name = ""A"", Order = 1)]
+                    public int B { get; set; }
+
+                    [DataMember(Name = ""B"")]
+                    public int C;
+                }"
+                + FakeAttributes;
+
+            const string expected =
+                @"
+                using System.Runtime.Serialization;
+                [DataContract(Name = ""C1"", Namespace = ""n1"")]
+                struct C1
+                {
+                    [DataMember(Name = ""C"", Order = 3)]
+                    private int A;
+
+                    [DataMember(Name = ""A"", Order = 2)]
+                    public int B { get; set; }
+
+                    [DataMember(Name = ""B"", Order = 1)]
+                    public int C;
+                }"
+                + FakeAttributes;
+
+            await VerifyDiagnosticAndFixAsync(source, expected);
+        }
     }
 }
